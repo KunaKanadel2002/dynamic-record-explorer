@@ -1,0 +1,144 @@
+<template>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="top-left">
+            <select  class="input" onchange={handleObjectChange}>
+                <option value="">-- Select Object --</option>
+                <template for:each={objectOptions} for:item="obj">
+                    <option key={obj.value} value={obj.value}>{obj.label}</option>
+                </template>
+            </select>
+
+            <button class="btn fetch-btn" onclick={fetchRecords} disabled={isLoading}>Fetch</button>
+
+            <button class="btn secondary" onclick={toggleFilterBar} aria-pressed={showFilters}>
+                Filters
+            </button>
+        </div>
+
+        <div class="controls">
+            <input class="input search-input" type="search" placeholder="Search records..." oninput={handleSearch}
+                value={searchTerm} />
+        </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <template if:true={showFilters}>
+        <div class="filters-bar">
+            <template for:each={filters} for:item="flt" for:index="index">
+                <div key={flt.id} class="filter-row">
+
+                    <!-- FIELD combobox (Lightning base component - safe for value binding) -->
+                    <select class="input filter-field" data-index={index} onchange={handleFilterFieldChange}>
+                        <option value="">-- Field --</option>
+                        <template for:each={fieldOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        </template>
+                    </select>
+
+
+                    <!-- OPERATOR select field with custom styles -->
+                    <select class="input filter-operator" data-index={index} onchange={handleFilterOperatorChange}>
+                        <option value="">Operator</option>
+                        <template for:each={operatorOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        </template>
+                    </select>
+
+                    <!-- VALUE input -->
+                    <input class="input filter-value" data-index={index} type="text" value={flt.value}
+                        placeholder="Value" onchange={handleFilterValueChange} />
+                        
+                    <button class="btn secondary remove-filter-btn" data-index={index} onclick={removeFilter}>
+                        Remove
+                    </button>
+
+                </div>
+            </template>
+
+            <div class="filters-actions">
+                <button class="btn" onclick={addFilter}>+ Add Filter</button>
+                <button class="btn fetch-btn" onclick={applyFilters}>Apply Filters</button>
+                <button class="btn secondary" onclick={clearFilters}>Clear</button>
+                <button class="btn secondary" onclick={toggleFilterBar}>Close</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- LOADER -->
+    <template if:true={isLoading}>
+        <div class="loader">Loading…</div>
+    </template>
+
+    <!-- NO RECORDS -->
+    <template if:true={noRecords}>
+        <div class="empty">No records found.</div>
+    </template>
+
+    <!-- RECORDS LIST -->
+    <div class="records-container">
+        <template if:true={records}>
+            <template for:each={records} for:item="record">
+                <div key={record.Id} class="record-card">
+
+                    <!-- HEADER -->
+                    <div class="record-header">
+                        <span class="record-title">Record • {record.Name}</span>
+
+                        <button class="expand-btn" aria-pressed={record.expanded} data-record-id={record.Id}
+                            onclick={toggleExpand} title="Toggle details">
+
+                            <svg class="arrow" width="16" height="10" viewBox="0 0 16 10"
+                                xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                <path d="M1 1 L8 8 L15 1" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- COLLAPSED -->
+                    <template if:false={record.expanded}>
+                        <div class="record-details">
+                            <template for:each={record.essentialChunks} for:item="column">
+                                <div key={column.key} class="details-column">
+                                    <template for:each={column.fields} for:item="fld">
+                                        <p key={fld.name} class="field-line">
+                                            <b>{fld.label}</b> : <span>{fld.value}</span>
+                                        </p>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- EXPANDED -->
+                    <template if:true={record.expanded}>
+
+                        <input class="input record-search-input" type="search"
+                            placeholder="Search fields in this record..." data-record-id={record.Id}
+                            oninput={handleRecordFieldSearch} value={record.fieldSearchTerm} />
+
+                        <div class="record-details">
+                            <template for:each={record.fieldChunksFiltered} for:item="column">
+                                <div key={column.key} class="details-column">
+                                    <template for:each={column.fields} for:item="fld">
+                                        <p key={fld.name} class="field-line">
+                                            <b>{fld.label}</b> : <span>{fld.value}</span>
+                                        </p>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                    </template>
+
+                </div>
+            </template>
+        </template>
+    </div>
+</template>
+
+
+
+
+
